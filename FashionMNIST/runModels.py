@@ -4,6 +4,7 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 from timeit import default_timer as timer
 
+
 print("Importing classes:")
 print("MLPWithBatchNorm")
 from multilayerBatchNorm import MLPWithBatchNorm
@@ -11,6 +12,11 @@ print("SoftmaxClassfier")
 from softmaxClasifier import SoftmaxClassifier
 print("MLPWithDropout")
 from multiLayerPerceptron import MLPWithDropout
+print("MultiNormDrop")
+from multiNormDrop import MultiBatchNorm
+print("InitNet")
+from weightInit import InitNet
+
 
 print("Defining helper functions")
 def print_train_time(start:float, end: float, stage: "Unknown"):
@@ -31,7 +37,7 @@ def evaluate_model(model,test_loader):
     print(f'Accuracy: {100 * correct / total:.2f}%')
 
 def train_model(model, train_loader, criterion, optimizer):
-    epochs = 5
+    epochs = 10
     # training loop
     train_start_time = timer()
     for epoch in range(epochs):  # train for 5 epochs
@@ -56,36 +62,45 @@ train_dataset = datasets.FashionMNIST(root = './data', train = True, download = 
 test_dataset = datasets.FashionMNIST(root = './data', train = False, download = True, transform = transform)
 
 # create data loaders
-train_loader = DataLoader(dataset = train_dataset, batch_size = 64, shuffle = True, num_workers=4)
+train_loader = DataLoader(dataset = train_dataset, batch_size = 64, shuffle = True, num_workers=8)
 test_loader = DataLoader(dataset = test_dataset, batch_size = 1000)
 
 download_time_end = timer()
 print_train_time(download_time_start,download_time_end,"downloading resources")
 
 
-print("\n Model 1")
+print("\n Model 1 - Dropout")
 model = MLPWithDropout()
 # use cross-entropy loss and Adam optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-
 train_model(model, train_loader, criterion, optimizer)
 evaluate_model(model, test_loader)
 
-print("\n Model 2")
+print("\n Model 2 - Batch Normalize")
 model2 = MLPWithBatchNorm()
-
 criterion2 = nn.CrossEntropyLoss()
 optimizer2 = torch.optim.Adam(model2.parameters(), lr=0.001)
-
 train_model(model2, test_loader, criterion2, optimizer2)
 evaluate_model(model2, test_loader)
 
-print("\n Model 3")
+print("\n Model 3 - Softmax")
 model3 = SoftmaxClassifier()
-
 criterion3 = nn.CrossEntropyLoss()
 optimizer3 = torch.optim.SGD(model3.parameters(), lr= 0.01)
-
 train_model(model3, train_loader, criterion3, optimizer3)
 evaluate_model(model3, test_loader)
+
+print("\n Model 4 - Mix of dropout and normalization")
+model4 = MultiBatchNorm()
+criterion4 = nn.CrossEntropyLoss()
+optimizer4 = torch.optim.Adam(model4.parameters(), lr=0.001)
+train_model(model4, test_loader, criterion4, optimizer4)
+evaluate_model(model4, test_loader)
+
+print("\n Model 5 - weight initialization")
+model5 = InitNet()
+criterion5 = nn.CrossEntropyLoss()
+optimizer5 = torch.optim.Adam(model5.parameters(), lr=0.001)
+train_model(model5, test_loader, criterion5, optimizer5)
+evaluate_model(model5, test_loader)
